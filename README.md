@@ -25,7 +25,16 @@ macOS and Windows, and GitHub Actions that check every push and publish your rel
 3. Write your mod in `src/mod.cpp`. The rest of `src/` is plumbing you rarely need to touch.
 
 Everything else (the DLL's name, its version, what it tells nEVR) comes from `echo-mod.json`,
-so that file is the only one to edit when you rename the mod or bump its version.
+so that file is the only one to edit when you bump the version. Pick `id` and `file` with
+care: once the mod is approved they stay (a new name needs the maintainers, on your
+submission issue).
+
+Does your mod need another one, or can't it run beside one? Say so in `requires` and
+`conflicts` ([AGENTS.md](AGENTS.md#echo-modjson) has the format): the launcher installs what
+it needs and keeps conflicting mods apart.
+
+Before you push, `python3 tools/check_mod.py` checks `echo-mod.json` the way the launcher's
+catalogue will.
 
 ### Capabilities
 
@@ -59,13 +68,18 @@ On Linux, `tools/ci-build.sh` also runs the same checks as GitHub (it needs Wine
 
 ## 3. Try it in the game
 
-1. In the launcher, turn on local plugins for the version you test with. The launcher's
-   guide shows how:
-   [Writing a plugin and loading it from your PC](https://github.com/marshmallow-mia/EchoVR_Launcher/blob/main/docs/plugins/local-plugins.md#4-loading-it-with-the-launcher).
-2. **Mods → Installed mods → Add DLL**, pick your DLL, then start with **PLAY**.
-3. Your mod's state (Loaded, Failed and why) is on the Mods page. **Logs** opens its log:
-   `plugin_logs/<YourMod>/<YourMod>.log` in the game's `bin/win10` folder.
-4. After a rebuild, add the DLL again with **Add DLL**.
+Testing goes in steps, each reaching more people:
+
+1. **On your PC:** turn on local plugins for the version you test with (the launcher's guide:
+   [Writing a plugin and loading it from your PC](https://github.com/marshmallow-mia/EchoVR_Launcher/blob/main/docs/plugins/local-plugins.md#4-loading-it-with-the-launcher)),
+   then **Mods → Installed mods → Add DLL**, pick your DLL (with its `.plugin.json` beside
+   it), start with **PLAY**. Your mod's state (Loaded, Failed and why) is on the Mods page;
+   **Logs** opens its log. After a rebuild, add the DLL again.
+2. **Your testers:** once your first mod is approved you have a **dev channel** (below):
+   upload a test build there, and your testers see it in their launcher.
+3. **Everyone who wants to:** release a prerelease (`1.5.0-beta.1`). Players get it only if
+   they turn on prereleases for your mod.
+4. **Everyone:** release it.
 
 ## 4. Publish it
 
@@ -79,20 +93,28 @@ yourself.
    ```sh
    git tag v1.4.2 && git push origin v1.4.2
    ```
-3. The **release** workflow builds, checks and publishes the GitHub release. If the tag doesn't
-   match `echo-mod.json`, it stops and tells you.
+3. The **release** workflow builds, checks and publishes the GitHub release. It checks the
+   release by the launcher's current rules first: if something's off (the tag doesn't match
+   `echo-mod.json`, say), it stops and tells you, and nothing is published.
 
-A version, once published, never changes: fix things with a new version.
+A version, once published, never changes: fix things with a new version. Within about 5
+minutes it's live in the launcher, and the result (live, or why not) is posted on your
+submission issue. Something seriously wrong with a published version? Comment on your
+submission issue (or use the **Pull a version** form in echo-mods): it can be turned off for
+everyone, and players go back to the version before.
 
 ### Getting into the launcher
 
 - **Your first mod:** open a submission at
   [EchoTools/echo-mods](https://github.com/EchoTools/echo-mods/issues/new/choose) once your repo
-  has a release. An automatic check runs and comments on it. After the mod is approved, every new
+  has a release. The form asks for your EchoVRCE username: like everything in the issue, it's
+  public. An automatic check runs and comments on it. After the mod is approved, every new
   release of it reaches players on its own.
 - **After the first approval** you also get a **dev channel**: a folder you upload test builds
-  to over SFTP (with your GitHub account's SSH key), and a code testers enter in the launcher.
-  Who may use your channel is decided by the launcher team, so tell us who your testers are.
+  to over SFTP (with your GitHub account's SSH keys), and a code (in `DEV-CODE.txt` there).
+  In the launcher the code works for your EchoVRCE account and the testers you list in
+  `access.json` in that folder: `{"schema": 1, "accounts": ["SomePlayer", "AnotherPlayer"]}`
+  (EchoVRCE usernames). `ACCESS-STATUS.txt` beside it says which ones were found.
 - **Each new mod** of yours is submitted once the same way.
 
 ### Who sees your mod
@@ -100,12 +122,11 @@ A version, once published, never changes: fix things with a new version.
 Set `visibility` in `echo-mod.json`:
 
 - `public` (the default): listed in the launcher for everyone
-- `unlisted`: not listed, but anyone with its id or link can get it
-- `private`: only you and the players you name. Put an `access.json` in your dev channel's
-  SFTP folder with their **EchoVRCE usernames**:
-  ```json
-  { "my-cool-mod": ["SomePlayer", "AnotherPlayer"] }
-  ```
+- `unlisted`: not listed; anyone who knows its id adds it (More mods → **Add by id**)
+- `private`: like unlisted, but only for you and the accounts in your dev channel's
+  `access.json` (above), signed in with EchoVRCE
+
+The newest release (not a prerelease) decides.
 
 ## Rules
 

@@ -70,20 +70,20 @@ A change is done when `tools/ci-build.sh` passes (or the **build** workflow on G
 | Field | Rule |
 |---|---|
 | `schema` | `1` |
-| `id` | `^[a-z0-9][a-z0-9._-]{0,63}$`, unique among all mods, never changes after the first release. Reserved: the launcher's own mods (`asset-patches`, `xmlhttp-fix`, `gpu-rating`, `content-overlay`, `missing-textures`, `server-patches`, `nevr*`, `echoxr*`, `echocombat`) |
+| `id` | `^[a-z0-9][a-z0-9._-]{0,63}$`, unique among all mods, never changes after approval. Reserved: the launcher's own mods (`asset-patches`, `xmlhttp-fix`, `gpu-rating`, `content-overlay`, `missing-textures`, `server-patches`, `echocombat`) and everything starting with `nevr`, `echoxr` or `echotools` |
 | `name`, `summary`, `author` | Non-empty text |
 | `version` | A [semantic version](https://semver.org/): `MAJOR.MINOR.PATCH`, optional `-prerelease`, optional `+build`. No `v` here. A prerelease part makes the release a prerelease. Build metadata doesn't count when versions are compared, so `1.0.0+a` and `1.0.0+b` are the same version |
 | `kind` | `mod` (one DLL) or `pack` (DLL + content, below) |
-| `file` | `^[A-Za-z0-9._-]{1,64}\.dll$`, unique among all mods. Reserved: `BugSplat64.dll`, `dbgcore.dll`, `nevr.dll`, `log_filter.dll`, the game's own DLLs, the launcher's `Nvr*.dll` and EchoXR files |
+| `file` | `^[A-Za-z0-9._-]{1,64}\.dll$`, unique among all mods, never changes after approval (the maintainers can rename it). Reserved: `BugSplat64.dll`, `dbgcore.dll`, `nevr.dll`, `log_filter.dll`, the game's own DLLs, and every name starting with `Nvr`, `nEVR` or `EchoXR` (any case) |
 | `api` | The plugin API version reported to nEVR: `5` (default, runs on every nEVR the launcher ships without a warning) or `6` |
 | `capabilities` | At least one of `observes-only`, `cosmetic`, `alters-gameplay`, `alters-rules`, `network`, `hooks-engine`. `observes-only` stands alone. Importing a network DLL (`ws2_32`, `wininet`, `winhttp`, ...) needs `network`; installing hooks needs `hooks-engine` |
-| `target` | `client`, `server` (game servers only) or `both` |
-| `visibility` | `public` (listed), `unlisted` (only by id or link) or `private` (only the accounts in the author's `access.json`) |
+| `target` | `client` or `both` (`server`, game servers only, isn't published yet) |
+| `visibility` | `public` (listed), `unlisted` (only by id: More mods → Add by id) or `private` (only the author's EchoVRCE account and those in their `access.json`). The newest release that isn't a prerelease decides |
 | `requires.nevr` | A version range of nEVR: comparators `>=`, `>`, `<=`, `<`, `=`, `^`, `~`, space-separated (`>=4.1.0 <6.0.0`), or `*` |
 | `requires.mods` | `[{"id": "other-mod", "version": ">=1.2.0"}]`: mods that must be on too |
 | `conflicts` | Ids of mods that must not be on at the same time |
 | `license` | An SPDX id of an open-source license (`MIT`, `Apache-2.0`, `GPL-3.0-only`, ...), matching `LICENSE` |
-| `homepage` | Empty or `https://...` |
+| `homepage` | Empty or `https://...` (the launcher links the repo itself) |
 | `args` | Default options, an object (values become strings) |
 | `settings` | Path of the `<Stem>.plugin.json` describing the mod's settings, or omitted |
 | `required`, `shipped` | Not allowed: only for the launcher's own mods |
@@ -208,11 +208,21 @@ launcher installs NvrContentOverlay itself, and packs need an nEVR with the earl
 2. Commit, tag `v<version>` on that commit, push the tag. Nothing else.
 3. `release.yml` builds, smoke-tests, checks the tag against the manifest, packs `dist/`
    (`<file>` or the pack zip, `echo-mod.json` with `version`, `prerelease`, `sha256`, `size`,
-   `settings` and `source` filled in, `SHA256SUMS`), attests the files and creates the GitHub
-   release (a prerelease when the version has a prerelease part).
+   `settings` and `source` filled in, `SHA256SUMS`), checks `dist/` with the template's
+   current `tools/check_mod.py --published` (the same check the launcher's catalogue applies),
+   attests the files and creates the GitHub release (a prerelease when the version has a
+   prerelease part).
+4. Within about 5 minutes the catalogue has it; the result ("live", or why not) is a comment
+   on the mod's submission issue.
 
 Published versions are immutable: never move or reuse a tag, never replace release files. A
-broken release is fixed by a new version.
+broken release is fixed by a new version. A published version that must not be used any more
+is pulled by the maintainers (ask on the submission issue, or the **Pull a version** form in
+echo-mods): launchers go back to the version before.
+
+Check a release locally like CI does: `python3 tools/package.py --dll build/mingw/<file>`, then
+`python3 tools/check_mod.py --published dist --tag v<version>`. `python3 tests/test_check_mod.py`
+tests the checks themselves.
 
 ## Distribution, briefly
 
@@ -220,9 +230,12 @@ broken release is fixed by a new version.
   [EchoTools/echo-mods](https://github.com/EchoTools/echo-mods/issues/new/choose) is approved.
   From then on every release of it is picked up automatically, if its checks and attestation hold.
 - Prereleases are offered only to players who turn on prereleases for that mod.
-- After the first approval the author has a dev channel (SFTP + a code) for test builds. Access
-  to it is granted by the launcher team. `access.json` in that SFTP folder lists, per mod id, the
-  EchoVRCE usernames that may get a `private` mod.
+- After the first approval the author has a dev channel (SFTP with the GitHub account's SSH keys,
+  the code in `DEV-CODE.txt`) for test builds. In the launcher the code opens it for the author's
+  EchoVRCE account and the accounts in `access.json` in that folder:
+  `{"schema": 1, "accounts": ["EchoVRCE username or account id", ...]}` (at most 50; a username
+  counts for the first account that signs in with it). The same list opens the author's
+  `private` mods. `ACCESS-STATUS.txt` there says what was found.
 
 ## Before you say it's done
 
