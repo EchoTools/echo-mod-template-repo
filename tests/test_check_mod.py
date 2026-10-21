@@ -66,7 +66,8 @@ class Published(unittest.TestCase):
             self.assertEqual(published["file"], MANIFEST["file"])
             self.assertTrue(published["pack"]["file"].endswith(".zip"))
             report = checked(Path(tmp) / "dist", f"v{MANIFEST['version']}")
-            self.assertEqual(report.errors, [])
+            # Built and checked as a pack; only not published yet.
+            self.assertEqual(report.errors, [check_mod.PACKS_LATER])
             # Only files in dist/: the release workflow uploads every entry (gh release create dist/*).
             self.assertEqual([p.name for p in (Path(tmp) / "dist").iterdir() if not p.is_file()], [])
 
@@ -121,6 +122,9 @@ class Manifest(unittest.TestCase):
 
     def test_server_mods_not_yet(self):
         self.assertTrue(self.errors(target="server"))
+
+    def test_packs_come_later(self):
+        self.assertIn(check_mod.PACKS_LATER, self.errors(kind="pack", pack={"content": "test-content"}))
         self.assertEqual(self.errors(target="both"), [])
 
 

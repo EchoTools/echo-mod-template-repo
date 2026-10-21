@@ -73,7 +73,7 @@ A change is done when `tools/ci-build.sh` passes (or the **build** workflow on G
 | `id` | `^[a-z0-9][a-z0-9._-]{0,63}$`, unique among all mods, never changes after approval. Reserved: the launcher's own mods (`asset-patches`, `xmlhttp-fix`, `gpu-rating`, `content-overlay`, `missing-textures`, `server-patches`, `echocombat`) and everything starting with `nevr`, `echoxr` or `echotools` |
 | `name`, `summary`, `author` | Non-empty text |
 | `version` | A [semantic version](https://semver.org/): `MAJOR.MINOR.PATCH`, optional `-prerelease`, optional `+build`. No `v` here. A prerelease part makes the release a prerelease. Build metadata doesn't count when versions are compared, so `1.0.0+a` and `1.0.0+b` are the same version |
-| `kind` | `mod` (one DLL) or `pack` (DLL + content, below) |
+| `kind` | `mod` (one DLL); `pack` (DLL + content, below) isn't published yet |
 | `file` | `^[A-Za-z0-9._-]{1,64}\.dll$`, unique among all mods, never changes after approval (the maintainers can rename it). Reserved: `BugSplat64.dll`, `dbgcore.dll`, `nevr.dll`, `log_filter.dll`, the game's own DLLs, and every name starting with `Nvr`, `nEVR` or `EchoXR` (any case) |
 | `api` | The plugin API version reported to nEVR: `5` (default, runs on every nEVR the launcher ships without a warning) or `6` |
 | `capabilities` | At least one of `observes-only`, `cosmetic`, `alters-gameplay`, `alters-rules`, `network`, `hooks-engine`. `observes-only` stands alone. Importing a network DLL (`ws2_32`, `wininet`, `winhttp`, ...) needs `network`; installing hooks needs `hooks-engine` |
@@ -188,6 +188,10 @@ Resource overrides replace a game resource as it is read. `data` must stay valid
 override is registered.
 
 ## Content packs (`kind: "pack"`)
+
+**Not published yet:** `check_mod.py` refuses `kind: "pack"` ("content packs come later"), so
+a pack can't be submitted or released to players for now. Build a plain `mod` (one DLL).
+What follows is how packs will work.
 
 A pack is the DLL plus game content that NvrContentOverlay serves:
 

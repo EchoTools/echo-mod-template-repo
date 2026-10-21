@@ -65,6 +65,10 @@ RESERVED_ID_PREFIXES = ("nevr", "echoxr", "echotools")
 RESERVED_FILE_PREFIXES = ("nvr", "nevr", "echoxr")
 # Not published yet: mods for game servers.
 UNPUBLISHED_TARGETS = {"server"}
+# Content packs (game data beside the DLL) aren't published yet: players' launchers can't
+# install them until the content overlay is in the launcher's own catalogue.
+UNPUBLISHED_KINDS = {"pack"}
+PACKS_LATER = "\"kind\": \"pack\" isn't published yet (content packs come later): a \"mod\" (one DLL)"
 
 # Exports nEVR looks up. GetInfo is required; the template exports all of them.
 EXPORTS_REQUIRED = {"NvrPluginGetInfo"}
@@ -161,6 +165,8 @@ def check_manifest(m, report, root, published=False):
     kind = m.get("kind", "mod")
     if kind not in KINDS:
         report.error(f"kind \"{kind}\": one of {sorted(KINDS)}")
+    elif kind in UNPUBLISHED_KINDS:
+        report.error(PACKS_LATER)
     file = need("file", str)
     if file is not None:
         if not FILE.match(file):
