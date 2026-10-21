@@ -67,6 +67,8 @@ class Published(unittest.TestCase):
             self.assertTrue(published["pack"]["file"].endswith(".zip"))
             report = checked(Path(tmp) / "dist", f"v{MANIFEST['version']}")
             self.assertEqual(report.errors, [])
+            # Only files in dist/: the release workflow uploads every entry (gh release create dist/*).
+            self.assertEqual([p.name for p in (Path(tmp) / "dist").iterdir() if not p.is_file()], [])
 
     def test_a_pack_with_a_path_out_is_refused(self):
         with tempfile.TemporaryDirectory() as tmp:

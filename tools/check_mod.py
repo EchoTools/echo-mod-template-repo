@@ -14,11 +14,14 @@ release: the release workflow runs it before it publishes anything.
 Exit code 0 when nothing is wrong. Warnings don't fail the check. Python 3.8+, no packages.
 """
 import argparse
+import atexit
 import hashlib
 import json
 import re
+import shutil
 import struct
 import sys
+import tempfile
 import zipfile
 from pathlib import Path
 
@@ -412,8 +415,10 @@ def check_published(work, tag, prerelease, report):
             if inner not in names:
                 report.error(f"the pack has no {inner}")
                 return manifest, None
-            out = work / "unpacked" / "plugins"
-            out.mkdir(parents=True, exist_ok=True)
+            # Outside the release's folder: the release workflow uploads all of it.
+            out = Path(tempfile.mkdtemp(prefix="check_mod-")) / "plugins"
+            atexit.register(shutil.rmtree, out.parent, True)
+            out.mkdir()
             (out / str(manifest["file"])).write_bytes(zf.read(inner))
             return manifest, out / str(manifest["file"])
     except zipfile.BadZipFile:
