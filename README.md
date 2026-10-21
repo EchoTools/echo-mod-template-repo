@@ -107,14 +107,15 @@ everyone, and players go back to the version before.
 
 - **Your first mod:** open a submission at
   [EchoTools/echo-mods](https://github.com/EchoTools/echo-mods/issues/new/choose) once your repo
-  has a release. The form asks for your EchoVRCE username: like everything in the issue, it's
-  public. An automatic check runs and comments on it. After the mod is approved, every new
+  has a release. The form asks for your EchoVRCE username, so the maintainers know who you are
+  there: like everything in the issue, it's public. An automatic check runs and comments on it. After the mod is approved, every new
   release of it reaches players on its own.
 - **After the first approval** you also get a **dev channel**: a folder you upload test builds
   to over SFTP (with your GitHub account's SSH keys), and a code (in `DEV-CODE.txt` there).
   In the launcher the code works for your EchoVRCE account and the testers you list in
-  `access.json` in that folder: `{"schema": 1, "accounts": ["SomePlayer", "AnotherPlayer"]}`
-  (EchoVRCE usernames). `ACCESS-STATUS.txt` beside it says which ones were found.
+  `access.json` in that folder by their **EchoVRCE account IDs** (they copy theirs on the
+  launcher's EchoVRCE page, **Copy ID**; usernames don't count, as names can change):
+  `{"schema": 1, "accounts": ["8f0c…-…", "…"]}`. `ACCESS-STATUS.txt` beside it says what was found.
 - **Each new mod** of yours is submitted once the same way.
 
 ### Who sees your mod

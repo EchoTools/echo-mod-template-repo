@@ -78,7 +78,7 @@ A change is done when `tools/ci-build.sh` passes (or the **build** workflow on G
 | `api` | The plugin API version reported to nEVR: `5` (default, runs on every nEVR the launcher ships without a warning) or `6` |
 | `capabilities` | At least one of `observes-only`, `cosmetic`, `alters-gameplay`, `alters-rules`, `network`, `hooks-engine`. `observes-only` stands alone. Importing a network DLL (`ws2_32`, `wininet`, `winhttp`, ...) needs `network`; installing hooks needs `hooks-engine` |
 | `target` | `client` or `both` (`server`, game servers only, isn't published yet) |
-| `visibility` | `public` (listed), `unlisted` (only by id: More mods → Add by id) or `private` (only the author's EchoVRCE account and those in their `access.json`). The newest release that isn't a prerelease decides |
+| `visibility` | `public` (listed), `unlisted` (only by id: More mods → Add by id) or `private` (only the author's EchoVRCE account and the account IDs in their `access.json`). The newest release that isn't a prerelease decides |
 | `requires.nevr` | A version range of nEVR: comparators `>=`, `>`, `<=`, `<`, `=`, `^`, `~`, space-separated (`>=4.1.0 <6.0.0`), or `*` |
 | `requires.mods` | `[{"id": "other-mod", "version": ">=1.2.0"}]`: mods that must be on too |
 | `conflicts` | Ids of mods that must not be on at the same time |
@@ -233,9 +233,9 @@ tests the checks themselves.
 - After the first approval the author has a dev channel (SFTP with the GitHub account's SSH keys,
   the code in `DEV-CODE.txt`) for test builds. In the launcher the code opens it for the author's
   EchoVRCE account and the accounts in `access.json` in that folder:
-  `{"schema": 1, "accounts": ["EchoVRCE username or account id", ...]}` (at most 50; a username
-  counts for the first account that signs in with it). The same list opens the author's
-  `private` mods. `ACCESS-STATUS.txt` there says what was found.
+  `{"schema": 1, "accounts": ["<EchoVRCE account ID>", ...]}` (at most 50; account IDs only,
+  copied on the launcher's EchoVRCE page; usernames are refused). The same list opens the
+  author's `private` mods. `ACCESS-STATUS.txt` there says what was found.
 
 ## Before you say it's done
 
